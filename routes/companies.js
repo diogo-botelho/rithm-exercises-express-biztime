@@ -1,7 +1,7 @@
 "use strict";
-
-const { NotFoundError } = require("./expressError");
-
+const express = require("express");
+// const pg = require("pg");
+const { NotFoundError } = require("../expressError");
 const db = require("../db");
 
 const router = express.Router();
@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/", async function (req,res,next) {
     const results = await db.query(
         `SELECT code, name
-            FROM companies`);q
+            FROM companies`);
     const companies = results.rows;
     return res.json({ companies });
 });
@@ -23,12 +23,12 @@ router.get("/", async function (req,res,next) {
 router.get("/:code", 
     //TODO: Add middleware function to check if company exists?
     async function (req,res,next) {
-    // const code = req.query.code;
+    const code = req.params.code;
     
     const results = await db.query(
         `SELECT code, name, description
             FROM companies
-            WHERE code = $1`, [req.params.code]);
+            WHERE code = $1`, [code]);
     const company = results.rows[0];
     return res.json({ company });
 });
