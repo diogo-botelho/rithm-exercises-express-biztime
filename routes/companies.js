@@ -28,17 +28,35 @@ router.get("/:code",
   async function (req, res, next) {
     const code = req.params.code;
 
-    const results = await db.query(
+    const cResults = await db.query(
       `SELECT code, name, description
             FROM companies
             WHERE code = $1`, [code]);
 
-    const company = results.rows[0];
+    const company = cResults.rows[0];
 
     if (!company) throw new NotFoundError(`Not found: ${code}`);
 
+    const iResults = await db.query(
+      `SELECT id
+            FROM invoices
+            WHERE comp_code = $1
+            ORDER BY id`, [code]);
+
+    const invoices = iResults.rows.map(invoice => invoice.id);
+
+    company.invoices = invoices;
+
     return res.json({ company });
   });
+
+  /**
+*  Also, one route from the previous part should be updated:
+*  GET /companies/[code]
+*      Return obj of company: {company: {code, name, description, invoices: [id, ...]}}
+*      If the company given cannot be found, this should return a 404 status response.
+*/
+
 
 /** POST /companies
 * Adds a company.
